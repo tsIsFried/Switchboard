@@ -155,55 +155,37 @@ local function openDiscord()
         url = "https://" .. url
     end
     
-    -- Try multiple methods to open URL
     local opened = false
     
-    -- Method 1: request with OpenUrl (some executors)
+    -- Method 1: GuiService (Roblox native)
     pcall(function()
-        if request then
-            request({Url = url, Method = "GET"})
-        end
+        local GuiService = game:GetService("GuiService")
+        GuiService:OpenBrowserWindow(url)
+        opened = true
     end)
     
-    -- Method 2: Fluxus/Synapse open URL
-    pcall(function()
-        if syn and syn.open_url then
-            syn.open_url(url)
-            opened = true
-        end
-    end)
+    -- Method 2: Synapse
+    if not opened then pcall(function()
+        if syn and syn.open_url then syn.open_url(url) opened = true end
+    end) end
     
     -- Method 3: Fluxus
-    pcall(function()
-        if fluxus and fluxus.open_url then
-            fluxus.open_url(url)
-            opened = true
-        end
-    end)
+    if not opened then pcall(function()
+        if fluxus and fluxus.open_url then fluxus.open_url(url) opened = true end
+    end) end
     
-    -- Method 4: Generic open_url
-    pcall(function()
-        if open_url then
-            open_url(url)
-            opened = true
-        end
-    end)
+    -- Method 4: Generic
+    if not opened then pcall(function()
+        if open_url then open_url(url) opened = true end
+    end) end
     
-    -- Method 5: openurl
-    pcall(function()
-        if openurl then
-            openurl(url)
-            opened = true
-        end
-    end)
+    if not opened then pcall(function()
+        if openurl then openurl(url) opened = true end
+    end) end
     
-    -- Fallback: copy to clipboard
+    -- Fallback: clipboard
     if not opened then
-        pcall(function()
-            if setclipboard then
-                setclipboard(url)
-            end
-        end)
+        pcall(function() if setclipboard then setclipboard(url) end end)
     end
     
     notify("Discord", DISCORD_INVITE, 4)

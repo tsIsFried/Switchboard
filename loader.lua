@@ -155,13 +155,58 @@ local function openDiscord()
         url = "https://" .. url
     end
     
-    -- Try to open in browser
-    if setclipboard then
-        setclipboard(url)
-        notify("Discord", "Link copied!\n" .. DISCORD_INVITE, 5)
-    else
-        notify("Discord", DISCORD_INVITE, 5)
+    -- Try multiple methods to open URL
+    local opened = false
+    
+    -- Method 1: request with OpenUrl (some executors)
+    pcall(function()
+        if request then
+            request({Url = url, Method = "GET"})
+        end
+    end)
+    
+    -- Method 2: Fluxus/Synapse open URL
+    pcall(function()
+        if syn and syn.open_url then
+            syn.open_url(url)
+            opened = true
+        end
+    end)
+    
+    -- Method 3: Fluxus
+    pcall(function()
+        if fluxus and fluxus.open_url then
+            fluxus.open_url(url)
+            opened = true
+        end
+    end)
+    
+    -- Method 4: Generic open_url
+    pcall(function()
+        if open_url then
+            open_url(url)
+            opened = true
+        end
+    end)
+    
+    -- Method 5: openurl
+    pcall(function()
+        if openurl then
+            openurl(url)
+            opened = true
+        end
+    end)
+    
+    -- Fallback: copy to clipboard
+    if not opened then
+        pcall(function()
+            if setclipboard then
+                setclipboard(url)
+            end
+        end)
     end
+    
+    notify("Discord", DISCORD_INVITE, 4)
 end
 
 local function waitForKey(validKeys)

@@ -5,7 +5,8 @@
     ╚═══════════════════════════════════════════════════════════════╝
     
     Controls:
-    - P: Cycle through scripts
+    - P: Next script
+    - O: Previous script
     - T: Toggle between Scripts / Debug Tools
     - Enter: Run selected script
     - Y/N: Set/decline default after running
@@ -297,16 +298,27 @@ local function runSwitchboard()
         end
         
         local current = list[idx]
-        local text = tabName .. " (" .. idx .. "/" .. total .. ")\n\n► " .. current.Name .. "\n\n[P] Next | [T] Tab | [Enter] Run"
+        local text = tabName .. " (" .. idx .. "/" .. total .. ")\n\n► " .. current.Name .. "\n\n[O] Prev | [P] Next | [T] Tab | [Enter] Run"
         notify("Switchboard", text, 10)
     end
     
     showMenu()
     
     while selecting do
-        local key = waitForKey({Enum.KeyCode.P, Enum.KeyCode.T, Enum.KeyCode.Return})
+        local key = waitForKey({Enum.KeyCode.O, Enum.KeyCode.P, Enum.KeyCode.T, Enum.KeyCode.Return})
         
-        if key == Enum.KeyCode.P then
+        if key == Enum.KeyCode.O then
+            -- Previous
+            local list = getCurrentList()
+            if #list > 0 then
+                local idx = getCurrentIndex() - 1
+                if idx < 1 then idx = #list end
+                setCurrentIndex(idx)
+            end
+            showMenu()
+            
+        elseif key == Enum.KeyCode.P then
+            -- Next
             local list = getCurrentList()
             if #list > 0 then
                 local idx = getCurrentIndex() + 1

@@ -167,7 +167,7 @@ local function waitForKey(validKeys)
     end)
     
     while waiting do
-        task.wait(0.1)
+        task.wait()
     end
     
     connection:Disconnect()

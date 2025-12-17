@@ -224,6 +224,13 @@ local function run()
     task.wait(0.5)
     notify("Game", gameName, 2)
     
+    -- Auto-open Discord (once per session)
+    if not Data.DiscordOpened and DISCORD_INVITE ~= "YOUR_DISCORD_INVITE_HERE" then
+        task.wait(0.5)
+        openDiscord()
+        Data.DiscordOpened = true
+    end
+    
     -- Load registry (with cache)
     local registry
     if Data.RegistryCache and tick() - Data.CacheTime < 300 then

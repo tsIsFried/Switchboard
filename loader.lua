@@ -8,6 +8,7 @@
     - O/P: Previous/Next script
     - T: Toggle Scripts / Debug Tools
     - C: Clear saved default
+    - D: Open Discord
     - Enter: Run script
     - Y/N: Save as default
 ]]
@@ -26,8 +27,9 @@ local MarketplaceService = game:GetService("MarketplaceService")
 -- CONFIGURATION
 -- ═══════════════════════════════════════════════════════════════
 
-local VERSION = "1.1.0"
+local VERSION = "1.2.0"
 local REGISTRY_URL = "https://raw.githubusercontent.com/tsIsFried/Switchboard/master/registry.lua"
+local DISCORD_INVITE = "YOUR_DISCORD_INVITE_HERE" -- e.g., "discord.gg/yourserver"
 
 local DEBUG_TOOL_KEYS = {
     ["InfiniteYield"] = true,
@@ -141,6 +143,26 @@ end
 
 local lastKeyTime = 0
 local DEBOUNCE = 0.15
+
+local function openDiscord()
+    if DISCORD_INVITE == "YOUR_DISCORD_INVITE_HERE" then
+        notify("Discord", "Invite not configured", 3)
+        return
+    end
+    
+    local url = DISCORD_INVITE
+    if not url:match("^https?://") then
+        url = "https://" .. url
+    end
+    
+    -- Try to open in browser
+    if setclipboard then
+        setclipboard(url)
+        notify("Discord", "Link copied!\n" .. DISCORD_INVITE, 5)
+    else
+        notify("Discord", DISCORD_INVITE, 5)
+    end
+end
 
 local function waitForKey(validKeys)
     local result = nil
@@ -274,7 +296,7 @@ local function run()
         
         local item = list[i]
         local defaultMark = (hasDefault and Data.Defaults[gameId] == item.Key) and " ★" or ""
-        local text = tabName .. " (" .. i .. "/" .. #list .. ")" .. defaultMark .. "\n\n► " .. item.Name .. "\n\n[O]◄ [P]► [T]Tab [C]Clear [Enter]Run"
+        local text = tabName .. " (" .. i .. "/" .. #list .. ")" .. defaultMark .. "\n\n► " .. item.Name .. "\n\n[O]◄ [P]► [T]Tab [D]Discord [Enter]Run"
         notify("Switchboard", text, 15)
     end
     
@@ -283,7 +305,7 @@ local function run()
     while true do
         local key = waitForKey({
             Enum.KeyCode.O, Enum.KeyCode.P, Enum.KeyCode.T,
-            Enum.KeyCode.C, Enum.KeyCode.Return
+            Enum.KeyCode.C, Enum.KeyCode.D, Enum.KeyCode.Return
         })
         
         local list = getList()
@@ -319,6 +341,11 @@ local function run()
                 task.wait(0.3)
                 showMenu()
             end
+            
+        elseif key == Enum.KeyCode.D then
+            openDiscord()
+            task.wait(0.5)
+            showMenu()
             
         elseif key == Enum.KeyCode.Return and #list > 0 then
             break

@@ -19,24 +19,10 @@ Switchboard automatically detects the game you're in, shows available scripts, l
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Loadstring
 
-### 1. Host the Registry
-
-Upload `registry.lua` to GitHub (use Raw URL) or Pastebin.
-
-### 2. Configure the Loader
-
-Edit `loader.lua` line 20:
 ```lua
-local REGISTRY_URL = "https://raw.githubusercontent.com/YOUR_USER/Switchboard/main/registry.lua"
-```
-
-### 3. Use It
-
-Put in your autoexec folder, or run:
-```lua
-loadstring(game:HttpGet("YOUR_LOADER_URL"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tsIsFried/Switchboard/master/loader.lua"))()
 ```
 
 ---
@@ -103,17 +89,6 @@ loadstring(game:HttpGet("YOUR_LOADER_URL"))()
 - Synapse X (Oct 2023)
 - SirHurt
 - Synapse Z
-
----
-
-## 📁 File Structure
-
-```
-Switchboard/
-├── loader.lua      # Main script (autoexec)
-├── registry.lua    # Scripts & game mappings (host remotely)
-└── README.md
-```
 
 ---
 

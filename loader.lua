@@ -17,7 +17,7 @@
 -- CONFIGURATION
 -- ═══════════════════════════════════════════════════════════════
 
-local REGISTRY_URL = "YOUR_REGISTRY_URL_HERE" -- Replace with your hosted registry.lua URL
+local REGISTRY_URL = "https://raw.githubusercontent.com/tsIsFried/Switchboard/master/registry.lua"
 local NOTIFICATION_DURATION = 5 -- How long notifications stay visible (seconds)
 
 -- ═══════════════════════════════════════════════════════════════

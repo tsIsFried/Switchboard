@@ -141,11 +141,35 @@ local ExecutorData = ExecutorInfo[ExecutorName] or ExecutorInfo["Unknown"]
 -- UTILITY FUNCTIONS
 -- ═══════════════════════════════════════════════════════════════
 
+-- Wait for notification system to be ready
+local function waitForNotifications()
+    local StarterGui = game:GetService("StarterGui")
+    local maxWait = 10
+    local waited = 0
+    
+    while waited < maxWait do
+        local success = pcall(function()
+            StarterGui:GetCore("SendNotification")
+        end)
+        if success then return true end
+        task.wait(0.5)
+        waited = waited + 0.5
+    end
+    return false
+end
+
+local notificationsReady = false
+
 local function notify(title, text, duration)
     duration = duration or NOTIFICATION_DURATION
     
-    -- Try multiple notification methods for compatibility
-    if game:GetService("StarterGui"):GetCore("SendNotification") then
+    -- Wait for notifications on first call
+    if not notificationsReady then
+        notificationsReady = waitForNotifications()
+    end
+    
+    -- Send notification if ready
+    if notificationsReady then
         pcall(function()
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = title,

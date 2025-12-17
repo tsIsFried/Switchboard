@@ -2,24 +2,39 @@
 
 **Game-Aware Script Execution System for Roblox**
 
-Switchboard automatically detects the game you're in, shows your executor info, presents available scripts, and lets you set defaults for instant loading.
+Switchboard automatically detects the game you're in, shows available scripts, lets you pick one, and saves your choice as default for instant loading next time.
+
+![Lua](https://img.shields.io/badge/Lua-2C2D72?style=for-the-badge&logo=lua&logoColor=white)
+![Roblox](https://img.shields.io/badge/Roblox-000000?style=for-the-badge&logo=roblox&logoColor=white)
+
+---
+
+## ✨ Features
+
+- 🎮 **Auto Game Detection** - Detects `game.GameId` automatically
+- 📜 **Script Menu** - Shows all available scripts for the current game
+- ⭐ **Default System** - Save your favorite script per game
+- 🖥️ **Executor Detection** - Shows your executor name, platform, price, and rating
+- 🔄 **Universal Fallback** - Utility scripts available for any game
 
 ---
 
 ## 🚀 Quick Start
 
 ### 1. Host the Registry
-Upload `registry.lua` to GitHub (use the Raw URL) or Pastebin.
+
+Upload `registry.lua` to GitHub (use Raw URL) or Pastebin.
 
 ### 2. Configure the Loader
-In `loader.lua`, replace:
-```lua
-local REGISTRY_URL = "YOUR_REGISTRY_URL_HERE"
-```
-With your hosted registry URL.
 
-### 3. Run It
-Put `loader.lua` in your executor's autoexec, or use a loadstring:
+Edit `loader.lua` line 20:
+```lua
+local REGISTRY_URL = "https://raw.githubusercontent.com/YOUR_USER/Switchboard/main/registry.lua"
+```
+
+### 3. Use It
+
+Put in your autoexec folder, or run:
 ```lua
 loadstring(game:HttpGet("YOUR_LOADER_URL"))()
 ```
@@ -37,70 +52,94 @@ loadstring(game:HttpGet("YOUR_LOADER_URL"))()
 
 ---
 
-## 📋 Features
+## 📦 Included Scripts
 
-### Executor Detection
-Shows your executor with platform, price, and rating:
-```
-Delta | Android/iOS | Free (Key) | ★★★★☆
-```
-
-### Supported Executors
-| Tier | Executors |
-|------|-----------|
-| **Premium (Paid)** | AWP, Script-Ware, Wave, Macsploit, Seliware |
-| **Top Free (Win)** | Electron, Oxygen U, Swift, Zorara, Codex, Velocity |
-| **Mid Free (Win)** | Fluxus, Xeno, Evon, Comet, Vega X |
-| **Mobile** | Delta, Hydrogen, Arceus X, Nihon, Trigon |
-| **Dead ☠️** | Synapse X, SirHurt |
-
-### Script Hubs Included
-- **Voidware** - Bedwars, Forsaken, 99 Nights, Plants VS Brainrots
-- **ForgeHub** - Slap Battles, MM2, Demonfall, Dead Rails, The Forge
-- **Speed Hub** - Blade Ball, Pet Sim 99, King Legacy, Ninja Legends
+### Script Hubs
+- **Voidware** - Bedwars, Forsaken, 99 Nights, Ink Game, Plants VS Brainrots
+- **ForgeHub** - Slap Battles, MM2, Demonfall, Dead Rails, The Forge, Grow A Garden
+- **Speed Hub** - Blade Ball, Pet Sim 99, King Legacy, Muscle Legends
+- **HoHo Hub** - Blox Fruits
+- **ZHub** - Arsenal, Da Hood, Jailbreak, Tower of Hell, Brookhaven
 - **Hyperlib** - Universal (works on any game)
-- **ZHub** - Arsenal, Da Hood, Jailbreak, Tower of Hell
-- **HoHo Hub** - Blox Fruits, Bedwars
-- **PepeHook** - The Forge
 
 ### Utilities
 - Infinite Yield
-- Dex Explorer
+- Dex Explorer  
 - Dark Dex
 - Remote Spy
 
 ---
 
-## 📁 Files
+## 🖥️ Supported Executors
+
+### Paid
+| Executor | Platform | Price | Rating |
+|----------|----------|-------|--------|
+| AWP | Windows | $7/week | ★★★★★ |
+| Script-Ware | Win/Mac | $13 | ★★★★★ |
+| Wave | Windows | $7.50 | ★★★★☆ |
+| Macsploit | Mac | $10 | ★★★★☆ |
+
+### Free - Windows
+| Executor | Key? | Rating |
+|----------|------|--------|
+| Electron | No | ★★★★☆ |
+| Oxygen U | No | ★★★★☆ |
+| Swift | No | ★★★★☆ |
+| Velocity | No | ★★★★☆ |
+| Fluxus | Yes | ★★★★☆ |
+| Solara | No | ★★☆☆☆ |
+| JJSploit | No | ★★☆☆☆ |
+
+### Free - Mobile
+| Executor | Platform | Rating |
+|----------|----------|--------|
+| Delta | Android/iOS | ★★★★☆ |
+| Hydrogen | Android | ★★★★☆ |
+| Arceus X | Android/iOS | ★★★★☆ |
+| Nihon | Android | ★★★★☆ |
+
+### ☠️ Dead Executors
+- Synapse X (Oct 2023)
+- SirHurt
+- Synapse Z
+
+---
+
+## 📁 File Structure
 
 ```
 Switchboard/
 ├── loader.lua      # Main script (autoexec)
-├── registry.lua    # Script database (host remotely)
+├── registry.lua    # Scripts & game mappings (host remotely)
 └── README.md
 ```
 
 ---
 
-## 🎮 Supported Games (50+)
+## ➕ Adding Scripts
 
-Blox Fruits, Bedwars, Pet Simulator 99, Murder Mystery 2, Arsenal, Da Hood, Jailbreak, Tower of Hell, Adopt Me, Brookhaven, Blade Ball, King Legacy, Anime Fighters, The Strongest Battlegrounds, Grow A Garden, The Forge, Dead Rails, Forsaken, 99 Nights, Shindo Life, Doors, Evade, and many more...
+### 1. Add to Scripts table in `registry.lua`:
+```lua
+MyScript = {
+    Name = "My Script",
+    Url = "https://raw.githubusercontent.com/user/repo/main/script.lua"
+}
+```
+
+### 2. Add to Games table:
+```lua
+[GAME_ID] = { "MyScript", "InfiniteYield", "Dex" },
+```
 
 ---
 
-## 💾 How Defaults Work
+## ⚠️ Disclaimer
 
-1. Run a script → Asked to save as default
-2. Press **Y** → Auto-loads next time you join that game
-3. Defaults persist for the session
-
-Clear defaults:
-```lua
-getgenv().SwitchboardData.Defaults = {}
-```
+This project is for educational purposes. Using exploits violates Roblox ToS and may result in bans. Use at your own risk.
 
 ---
 
 ## 📄 License
 
-Free to use, modify, and distribute.
+MIT - Free to use, modify, and distribute.

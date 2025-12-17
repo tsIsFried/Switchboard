@@ -4,12 +4,10 @@
     ║              Game-Aware Script Execution System               ║
     ╚═══════════════════════════════════════════════════════════════╝
     
-    Put this single loadstring in your autoexec folder.
-    It will automatically detect the game and present available scripts.
-    
     Controls:
-    - Q: Cycle through available scripts
-    - Enter: Run the selected script
+    - Q: Cycle through scripts
+    - T: Toggle between Scripts / Debug Tools
+    - Enter: Run selected script
     - Y/N: Set/decline default after running
 ]]
 
@@ -21,7 +19,15 @@ repeat task.wait() until game:IsLoaded()
 -- ═══════════════════════════════════════════════════════════════
 
 local REGISTRY_URL = "https://raw.githubusercontent.com/tsIsFried/Switchboard/master/registry.lua"
-local NOTIFICATION_DURATION = 5 -- How long notifications stay visible (seconds)
+local NOTIFICATION_DURATION = 5
+
+-- Debug tools (shown in separate tab)
+local DEBUG_TOOL_KEYS = {
+    ["InfiniteYield"] = true,
+    ["Dex"] = true,
+    ["DarkDex"] = true,
+    ["RemoteSpy"] = true,
+}
 
 -- ═══════════════════════════════════════════════════════════════
 -- INITIALIZE PERSISTENT STORAGE
@@ -29,7 +35,7 @@ local NOTIFICATION_DURATION = 5 -- How long notifications stay visible (seconds)
 
 if not getgenv().SwitchboardData then
     getgenv().SwitchboardData = {
-        Defaults = {}, -- [GameId] = "ScriptKey"
+        Defaults = {},
         Version = "1.0.0"
     }
 end
@@ -41,43 +47,31 @@ local SwitchboardData = getgenv().SwitchboardData
 -- ═══════════════════════════════════════════════════════════════
 
 local ExecutorInfo = {
-    -- Format: { platform, price, rating }
-    -- DISCONTINUED / DEAD
     ["Synapse X"]   = { platform = "Windows",      price = "DEAD (Oct 2023)", rating = "☠️" },
     ["Synapse Z"]   = { platform = "Windows",      price = "DEAD",            rating = "☠️" },
     ["SirHurt"]     = { platform = "Windows",      price = "DEAD",            rating = "☠️" },
-    
-    -- PAID - PREMIUM
     ["AWP"]         = { platform = "Windows",      price = "Paid ($7/wk)",    rating = "★★★★★" },
     ["Script-Ware"] = { platform = "Win/Mac",      price = "Paid ($13)",      rating = "★★★★★" },
     ["Wave"]        = { platform = "Windows",      price = "Paid ($7.50)",    rating = "★★★★☆" },
     ["Macsploit"]   = { platform = "Mac",          price = "Paid ($10)",      rating = "★★★★☆" },
     ["Seliware"]    = { platform = "Windows",      price = "Paid ($10/mo)",   rating = "★★★★☆" },
     ["Sentinel"]    = { platform = "Windows",      price = "Paid",            rating = "★★★★☆" },
-    
-    -- FREE - WINDOWS (TOP TIER)
     ["Electron"]    = { platform = "Windows",      price = "Free",            rating = "★★★★☆" },
     ["Oxygen U"]    = { platform = "Windows",      price = "Free",            rating = "★★★★☆" },
     ["Swift"]       = { platform = "Windows",      price = "Free",            rating = "★★★★☆" },
     ["Zorara"]      = { platform = "Windows",      price = "Free",            rating = "★★★★☆" },
     ["Codex"]       = { platform = "Windows",      price = "Free",            rating = "★★★★☆" },
     ["Velocity"]    = { platform = "Windows",      price = "Free",            rating = "★★★★☆" },
-    
-    -- FREE - WINDOWS (MID TIER)
     ["Fluxus"]      = { platform = "Win/Android",  price = "Free (Key)",      rating = "★★★★☆" },
     ["Xeno"]        = { platform = "Windows",      price = "Free",            rating = "★★★☆☆" },
     ["Evon"]        = { platform = "Windows",      price = "Free (Key)",      rating = "★★★☆☆" },
     ["Comet"]       = { platform = "Windows",      price = "Free",            rating = "★★★☆☆" },
     ["Zenith"]      = { platform = "Windows",      price = "Free",            rating = "★★★☆☆" },
     ["Vega X"]      = { platform = "Windows",      price = "Free (Keyless)",  rating = "★★★☆☆" },
-    
-    -- FREE - WINDOWS (LOW TIER)
     ["Solara"]      = { platform = "Windows",      price = "Free (Keyless)",  rating = "★★☆☆☆" },
     ["JJSploit"]    = { platform = "Windows",      price = "Free",            rating = "★★☆☆☆" },
     ["Celery"]      = { platform = "Windows",      price = "Free",            rating = "★★☆☆☆" },
     ["Temple"]      = { platform = "Windows",      price = "Free",            rating = "★★☆☆☆" },
-    
-    -- MOBILE - ANDROID/IOS
     ["Delta"]       = { platform = "Android/iOS",  price = "Free (Key)",      rating = "★★★★☆" },
     ["Hydrogen"]    = { platform = "Android",      price = "Free",            rating = "★★★★☆" },
     ["Arceus X"]    = { platform = "Android/iOS",  price = "Free",            rating = "★★★★☆" },
@@ -85,7 +79,6 @@ local ExecutorInfo = {
     ["Trigon"]      = { platform = "Android",      price = "Free (Key)",      rating = "★★★☆☆" },
     ["Cryptic"]     = { platform = "Android",      price = "Free",            rating = "★★★☆☆" },
     ["Ronix"]       = { platform = "Android",      price = "Free",            rating = "★★☆☆☆" },
-    
     ["Unknown"]     = { platform = "?",            price = "?",               rating = "?" },
 }
 
@@ -94,7 +87,6 @@ local ExecutorInfo = {
 -- ═══════════════════════════════════════════════════════════════
 
 local function detectExecutor()
-    -- Try built-in functions first
     if identifyexecutor then
         local name = identifyexecutor()
         if name then return name end
@@ -104,7 +96,6 @@ local function detectExecutor()
         if name then return name end
     end
     
-    -- Check for specific executors
     if syn and syn.protect_gui then return "Synapse X" end
     if fluxus then return "Fluxus" end
     if Electron then return "Electron" end
@@ -148,11 +139,7 @@ local StarterGui = game:GetService("StarterGui")
 
 local function notify(title, text, duration)
     duration = duration or NOTIFICATION_DURATION
-    
-    -- Print to console
     print("[Switchboard] " .. title .. ": " .. text)
-    
-    -- Send notification (game is already loaded so this should work)
     StarterGui:SetCore("SendNotification", {
         Title = title,
         Text = text,
@@ -164,11 +151,10 @@ local function waitForKey(validKeys)
     local UserInputService = game:GetService("UserInputService")
     local connection
     local result = nil
-    
     local waiting = true
+    
     connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
-        
         for _, keyCode in ipairs(validKeys) do
             if input.KeyCode == keyCode then
                 result = keyCode
@@ -194,10 +180,10 @@ local function loadScript(scriptData)
     end)
     
     if success then
-        notify("Switchboard", "Successfully loaded: " .. scriptData.Name, 3)
+        notify("Switchboard", "Loaded: " .. scriptData.Name, 3)
     else
-        notify("Switchboard Error", "Failed to load: " .. scriptData.Name .. "\n" .. tostring(err), 5)
-        warn("[Switchboard] Error loading script:", err)
+        notify("Switchboard Error", "Failed: " .. scriptData.Name, 5)
+        warn("[Switchboard] Error:", err)
     end
     
     return success
@@ -208,15 +194,14 @@ end
 -- ═══════════════════════════════════════════════════════════════
 
 local function runSwitchboard()
-    -- Show executor notification with details
-    local execInfo = ExecutorName .. " | " .. ExecutorData.platform .. " | " .. ExecutorData.price .. " | " .. ExecutorData.rating
-    notify("Switchboard", execInfo, 4)
-    task.wait(1.5)
+    -- Show executor info
+    local execInfo = ExecutorName .. " | " .. ExecutorData.platform .. " | " .. ExecutorData.rating
+    notify("Switchboard", execInfo, 3)
+    task.wait(1)
     
     -- Get current game ID
     local gameId = game.GameId
-    
-    notify("Switchboard", "Detected GameId: " .. tostring(gameId), 3)
+    notify("Switchboard", "Game: " .. tostring(gameId), 2)
     
     -- Load the registry
     local registrySuccess, registry = pcall(function()
@@ -225,123 +210,145 @@ local function runSwitchboard()
     
     if not registrySuccess or not registry then
         notify("Switchboard Error", "Failed to load registry!", 5)
-        warn("[Switchboard] Registry load failed:", registry)
         return
     end
     
     -- Get available scripts for this game
     local availableScriptKeys = registry.Games[gameId]
     
-    -- Fallback to universal scripts (GameId 0) if no specific mapping
     if not availableScriptKeys or #availableScriptKeys == 0 then
         availableScriptKeys = registry.Games[0]
-        if availableScriptKeys then
-            notify("Switchboard", "No game-specific scripts. Using universal scripts.", 3)
-        end
     end
     
-    -- No scripts available at all
     if not availableScriptKeys or #availableScriptKeys == 0 then
-        notify("Switchboard", "No scripts available for this game.", 5)
+        notify("Switchboard", "No scripts for this game.", 5)
         return
     end
     
-    -- Build list of actual script data
-    local availableScripts = {}
+    -- Separate scripts into tabs
+    local gameScripts = {}
+    local debugTools = {}
+    
     for _, key in ipairs(availableScriptKeys) do
         local scriptData = registry.Scripts[key]
         if scriptData then
-            table.insert(availableScripts, {
+            local entry = {
                 Key = key,
                 Name = scriptData.Name,
                 Url = scriptData.Url
-            })
-        else
-            warn("[Switchboard] Script key not found in registry:", key)
+            }
+            if DEBUG_TOOL_KEYS[key] then
+                table.insert(debugTools, entry)
+            else
+                table.insert(gameScripts, entry)
+            end
         end
-    end
-    
-    if #availableScripts == 0 then
-        notify("Switchboard", "No valid scripts found for this game.", 5)
-        return
     end
     
     -- Check for saved default
     local defaultKey = SwitchboardData.Defaults[gameId]
     
     if defaultKey then
-        -- Find the default script in available scripts
-        for _, script in ipairs(availableScripts) do
+        for _, script in ipairs(gameScripts) do
             if script.Key == defaultKey then
-                notify("Switchboard", "Auto-loading default: " .. script.Name, 3)
+                notify("Switchboard", "Auto-loading: " .. script.Name, 3)
                 task.wait(1)
                 loadScript(script)
                 return
             end
         end
-        
-        -- Default script not found in current game's scripts
-        notify("Switchboard", "Saved default not available. Showing menu.", 3)
     end
     
     -- ═══════════════════════════════════════════════════════════
     -- SCRIPT SELECTION MENU
     -- ═══════════════════════════════════════════════════════════
     
-    local currentIndex = 1
+    local currentTab = 1  -- 1 = Scripts, 2 = Debug Tools
+    local scriptIndex = 1
+    local debugIndex = 1
     local selecting = true
     
-    -- Build script list string
-    local function getScriptListText()
-        local lines = {}
-        for i, script in ipairs(availableScripts) do
-            local prefix = (i == currentIndex) and "► " or "  "
-            table.insert(lines, prefix .. script.Name)
-        end
-        return table.concat(lines, "\n")
+    local function getCurrentList()
+        return currentTab == 1 and gameScripts or debugTools
     end
     
-    notify("Switchboard Menu", "Scripts for this game:\n" .. getScriptListText() .. "\n\n[Q] Cycle | [Enter] Run", 10)
+    local function getCurrentIndex()
+        return currentTab == 1 and scriptIndex or debugIndex
+    end
+    
+    local function setCurrentIndex(val)
+        if currentTab == 1 then
+            scriptIndex = val
+        else
+            debugIndex = val
+        end
+    end
+    
+    local function showMenu()
+        local list = getCurrentList()
+        local idx = getCurrentIndex()
+        local tabName = currentTab == 1 and "SCRIPTS" or "DEBUG TOOLS"
+        local total = #list
+        
+        if total == 0 then
+            notify("Switchboard", tabName .. "\nNo items\n\n[T] Switch Tab", 10)
+            return
+        end
+        
+        local current = list[idx]
+        local text = tabName .. " (" .. idx .. "/" .. total .. ")\n\n► " .. current.Name .. "\n\n[Q] Next | [T] Tab | [Enter] Run"
+        notify("Switchboard", text, 10)
+    end
+    
+    showMenu()
     
     while selecting do
-        local key = waitForKey({Enum.KeyCode.Q, Enum.KeyCode.Return})
+        local key = waitForKey({Enum.KeyCode.Q, Enum.KeyCode.T, Enum.KeyCode.Return})
         
         if key == Enum.KeyCode.Q then
-            -- Cycle to next script
-            currentIndex = currentIndex + 1
-            if currentIndex > #availableScripts then
-                currentIndex = 1
+            local list = getCurrentList()
+            if #list > 0 then
+                local idx = getCurrentIndex() + 1
+                if idx > #list then idx = 1 end
+                setCurrentIndex(idx)
             end
+            showMenu()
             
-            notify("Switchboard Menu", "Scripts for this game:\n" .. getScriptListText() .. "\n\n[Q] Cycle | [Enter] Run", 10)
+        elseif key == Enum.KeyCode.T then
+            -- Toggle tab
+            if currentTab == 1 and #debugTools > 0 then
+                currentTab = 2
+            elseif currentTab == 2 and #gameScripts > 0 then
+                currentTab = 1
+            end
+            showMenu()
             
         elseif key == Enum.KeyCode.Return then
-            -- Run selected script
-            selecting = false
+            local list = getCurrentList()
+            if #list > 0 then
+                selecting = false
+            end
         end
     end
     
-    local selectedScript = availableScripts[currentIndex]
+    local selectedScript = getCurrentList()[getCurrentIndex()]
     local loadSuccess = loadScript(selectedScript)
     
-    if not loadSuccess then
-        return
-    end
+    if not loadSuccess then return end
     
-    -- ═══════════════════════════════════════════════════════════
-    -- DEFAULT PROMPT
-    -- ═══════════════════════════════════════════════════════════
-    
-    task.wait(1)
-    notify("Switchboard", "Make '" .. selectedScript.Name .. "' the default?\n[Y] Yes | [N] No", 10)
-    
-    local defaultChoice = waitForKey({Enum.KeyCode.Y, Enum.KeyCode.N})
-    
-    if defaultChoice == Enum.KeyCode.Y then
-        SwitchboardData.Defaults[gameId] = selectedScript.Key
-        notify("Switchboard", "Default saved! '" .. selectedScript.Name .. "' will auto-load next time.", 5)
-    else
-        notify("Switchboard", "Default not saved. You'll see this menu next time.", 3)
+    -- Only ask to save default for game scripts, not debug tools
+    if currentTab == 1 then
+        task.wait(1)
+        notify("Switchboard", "Save as default?\n[Y] Yes | [N] No", 10)
+        
+        local defaultChoice = waitForKey({Enum.KeyCode.Y, Enum.KeyCode.N})
+        
+        if defaultChoice == Enum.KeyCode.Y then
+            SwitchboardData.Defaults[gameId] = selectedScript.Key
+            notify("Switchboard", "Default saved!", 3)
+        else
+            notify("Switchboard", "Not saved.", 2)
+        end
     end
 end
 
@@ -353,6 +360,6 @@ local success, err = pcall(runSwitchboard)
 if not success then
     warn("[Switchboard] Fatal error:", err)
     pcall(function()
-        notify("Switchboard Error", "Fatal error occurred. Check console.", 5)
+        notify("Switchboard Error", "Check console.", 5)
     end)
 end

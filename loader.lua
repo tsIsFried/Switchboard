@@ -141,46 +141,22 @@ local ExecutorData = ExecutorInfo[ExecutorName] or ExecutorInfo["Unknown"]
 -- UTILITY FUNCTIONS
 -- ═══════════════════════════════════════════════════════════════
 
--- Wait for notification system to be ready
-local function waitForNotifications()
-    local StarterGui = game:GetService("StarterGui")
-    local maxWait = 10
-    local waited = 0
-    
-    while waited < maxWait do
-        local success = pcall(function()
-            StarterGui:GetCore("SendNotification")
-        end)
-        if success then return true end
-        task.wait(0.5)
-        waited = waited + 0.5
-    end
-    return false
-end
-
-local notificationsReady = false
+local StarterGui = game:GetService("StarterGui")
 
 local function notify(title, text, duration)
     duration = duration or NOTIFICATION_DURATION
     
-    -- Wait for notifications on first call
-    if not notificationsReady then
-        notificationsReady = waitForNotifications()
-    end
-    
-    -- Send notification if ready
-    if notificationsReady then
-        pcall(function()
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = title,
-                Text = text,
-                Duration = duration
-            })
-        end)
-    end
-    
-    -- Also print to console for debugging
+    -- Print to console
     print("[Switchboard] " .. title .. ": " .. text)
+    
+    -- Try to send notification (silently fail if not ready)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = duration
+        })
+    end)
 end
 
 local function waitForKey(validKeys)
@@ -372,8 +348,17 @@ end
 -- START SWITCHBOARD
 -- ═══════════════════════════════════════════════════════════════
 
--- Small delay to ensure game is loaded
-task.wait(2)
+-- Wait for game to load
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+-- Wait for notification system to be ready (max 10 seconds)
+local waited = 0
+repeat
+    waited = waited + 0.5
+    task.wait(0.5)
+until pcall(function() StarterGui:SetCore("SendNotification", {Title = "", Text = "", Duration = 0.1}) end) or waited >= 10
 
 local success, err = pcall(runSwitchboard)
 if not success then

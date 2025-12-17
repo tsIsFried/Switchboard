@@ -210,6 +210,6 @@ return {
         -- ═══════════════════════════════════════════════════════════
         -- UNIVERSAL FALLBACK
         -- ═══════════════════════════════════════════════════════════
-        [0] = { "Hyperlib", "ZHub", "InfiniteYield", "Dex", "RemoteSpy", "DarkDex" },
+        [0] = { "Hyperlib", "ZHub", "InfiniteYield", "Dex", "RemoteSpy", "DarkDex", "PepeHook" },
     }
 }

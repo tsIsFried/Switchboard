@@ -27,6 +27,7 @@ local DEBUG_TOOL_KEYS = {
     ["Dex"] = true,
     ["DarkDex"] = true,
     ["RemoteSpy"] = true,
+    ["PepeHook"] = true,
 }
 
 -- ═══════════════════════════════════════════════════════════════

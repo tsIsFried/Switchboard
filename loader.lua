@@ -13,6 +13,9 @@
     - Y/N: Set/decline default after running
 ]]
 
+-- Wait for game to fully load first (like Voidware does)
+repeat task.wait() until game:IsLoaded()
+
 -- ═══════════════════════════════════════════════════════════════
 -- CONFIGURATION
 -- ═══════════════════════════════════════════════════════════════
@@ -149,14 +152,12 @@ local function notify(title, text, duration)
     -- Print to console
     print("[Switchboard] " .. title .. ": " .. text)
     
-    -- Try to send notification (silently fail if not ready)
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = title,
-            Text = text,
-            Duration = duration
-        })
-    end)
+    -- Send notification (game is already loaded so this should work)
+    StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = duration
+    })
 end
 
 local function waitForKey(validKeys)
@@ -348,20 +349,10 @@ end
 -- START SWITCHBOARD
 -- ═══════════════════════════════════════════════════════════════
 
--- Wait for game to load
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
-
--- Wait for notification system to be ready (max 10 seconds)
-local waited = 0
-repeat
-    waited = waited + 0.5
-    task.wait(0.5)
-until pcall(function() StarterGui:SetCore("SendNotification", {Title = "", Text = "", Duration = 0.1}) end) or waited >= 10
-
 local success, err = pcall(runSwitchboard)
 if not success then
     warn("[Switchboard] Fatal error:", err)
-    notify("Switchboard Error", "Fatal error occurred. Check console.", 5)
+    pcall(function()
+        notify("Switchboard Error", "Fatal error occurred. Check console.", 5)
+    end)
 end
